@@ -71,13 +71,12 @@ phi = V(:, 2:4) ./ V(:, 1);
 figure;
 subplot(3, 1, 1);
 scatter3(x1(:),y1(:),z1(:), 100 ,V(:,2)*10, '.');
-title('s1');
+title('$$s_{1}$$','fontsize',16,'interpreter','latex');
 subplot(3, 1, 2);
 scatter3(x2(:),y2(:),z2(:), 100 ,V(:,2)*10, '.');
-title('s2');
+title('$$s_{2}$$','fontsize',16,'interpreter','latex');
 subplot(3, 1, 3);
 scatter(cos(t1), sin(t1),100 ,V(:,2)*10, '.');
-title('The common variable');
-xlabel('$$\tilde{x}_{i,1}$$','fontsize',16,'interpreter','latex');
-ylabel('$$\tilde{x}_{i,2}$$','fontsize',16,'interpreter','latex');
 
+xlabel('$$cos(x_{i})$$','fontsize',16,'interpreter','latex');
+ylabel('$$sin(x_{i})$$','fontsize',16,'interpreter','latex');
