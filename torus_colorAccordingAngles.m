@@ -39,15 +39,8 @@ m = 1;
 d1 = zeros(N);
 d2 = zeros(N);
 
-for i =1:N
-    for j = 1:N
-        d1(i,j) = vecnorm(s1(i,:)-s1(j,:));
-        d2(i,j) = vecnorm(s2(i,:)-s2(j,:));
-    end
-end
-
-W1 = exp(-((d1 .^ 2) / eps1));
-W2 = exp(-((d2 .^ 2) / eps2));
+W1 = affinityMatrix(s1, eps1);
+W2 = affinityMatrix(s2, eps2);
 
 K1 = W1 ./ sum(W1,1);
 K2 = W2 ./ sum(W2,1);
