@@ -72,6 +72,42 @@ end
 
 close(video);
 
+
+%% Creating video for comparision with the V' 
+videoDiff = VideoWriter('yourvideodiff.MPEG','MPEG-4'); 
+open(videoDiff); 
+
+scV = rescale(dv, 0, 255);
+
+for ii=1:(size(framesMat, 3)-1)
+  vColoredFrame = framesMat(:,:,ii);
+  height = round(scV(ii) / 5);
+  vColoredFrame(400:400+height,1:50) = scV(ii) ;
+  vColoredFrame = vColoredFrame / 255;
+  
+  writeVideo(videoDiff, vColoredFrame); 
+end
+
+close(videoDiff);
+
+%% 
+video = VideoWriter('yourvideo3.MPEG','MPEG-4');
+open(video); 
+
+scV = rescale(speaker3, 0, 255);
+
+for ii=1:size(framesMat, 3)
+  vColoredFrame = framesMat(:,:,ii);
+  height = round(scV(ii) / 5);
+  vColoredFrame(400:400+height,1:50) = scV(ii) ;
+  vColoredFrame = vColoredFrame / 255;
+  
+  writeVideo(video, vColoredFrame); 
+end
+
+close(video);
+
+
 %% Compare results with the Labels:
 figure;
 speaker3 = labels(20*60*20:20*60*20+N-1, 580);
@@ -85,7 +121,7 @@ dv = diff(V(:,2));
 [c,lags] = xcorr(speaker3, dv);
 stem(lags,c);
 title('$$R(dV, speaker3)$$','fontsize',16,'interpreter','latex');
-%%
+%% Cross-Correlation with speaker3's labels
 figure;
 x = V(:,2);
 y = speaker3;
