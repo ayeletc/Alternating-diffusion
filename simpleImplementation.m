@@ -19,9 +19,8 @@ close all
 % from day 3 camera 3, minutes 20:00 - 22:00
 % speakers: 3 & 29
 % 
-
-N = 2000;  % (20 fps)
-
+% N = 2000;
+N = 300;  % (20 fps)
 
 % file = '2330_2500.mp4';
 file = '2000_2200.mp4';
@@ -32,7 +31,6 @@ acc1Samples = acc1(24000:24000+N-1, :,:, :);
 acc1Samples = acc1Samples(:, 2:4);
 
 labels = load('labels.csv');
-
 
 %% Alternating Diffusion
 ep1 = 1e7;
@@ -87,9 +85,26 @@ dv = diff(V(:,2));
 [c,lags] = xcorr(speaker3, dv);
 stem(lags,c);
 title('$$R(dV, speaker3)$$','fontsize',16,'interpreter','latex');
+%%
+figure;
+x = V(:,2);
+y = speaker3;
+Normalized_CrossCorr = (1/N) * sum((x-mean(x)) .* (y-mean(y))) / sqrt(var(x)*var(y));
+stem(Normalized_CrossCorr);
+%% Crossc-correlation with all the speakers
+% we expect to see maximum for the speakers (3 for example)
 
-% figure;
-% x = V(:,2);
-% y = speaker3;
-% Normalised_CrossCorr = (1/N) * sum((x-mean(x)) .* (y-mean(y))) / sqrt(var(x)*var(y));
-% stem(Normalised_CrossCorr);
+% speakersCol = 562:9:823;
+firstID = 63;
+speakersCol = 4+9*firstID:9:823;
+speakersN = size(speakersCol, 2);
+x = V(:,2);
+Normalized_CrossCorr = zeros(speakersN, 1);
+for ii=1:speakersN
+    y = labels(20*60*20:20*60*20+N-1, ii);
+    Normalized_CrossCorr(ii) = (1/N) * sum((x-mean(x)) .* (y-mean(y))) / sqrt(var(x)*var(y));
+end
+figure;
+stem(firstID:(823-4)/9, Normalized_CrossCorr);
+xlabel('speakers - absolute ID')
+title('Normalized Cross-Correlation(Speak-Labels, V(2))');
