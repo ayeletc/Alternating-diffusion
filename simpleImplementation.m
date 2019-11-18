@@ -20,15 +20,19 @@ close all
 % speakers: 3 & 29
 % 
 
-N = 300;  % (20 fps)
+N = 2000;  % (20 fps)
+
 
 % file = '2330_2500.mp4';
 file = '2000_2200.mp4';
 framesMat = frameExtractor(file, N);
-acc1 = load('day3_subject29.csv');
+acc1 = load('day3_subject3.csv');
 %%
-acc1Samples = acc1(24000:24000+300-1, :,:, :);
+acc1Samples = acc1(24000:24000+N-1, :,:, :);
 acc1Samples = acc1Samples(:, 2:4);
+
+labels = load('labels.csv');
+
 
 %% Alternating Diffusion
 ep1 = 1e7;
@@ -41,7 +45,7 @@ D = diag(D);
 
 %% Plots
 figure;
-x = 1:300;
+x = 1:N;
 scatter(x, abs(D));
 title('Eigen values');
 
@@ -57,14 +61,35 @@ title('$$accSamples_{1}$$','fontsize',16,'interpreter','latex');
 video = VideoWriter('yourvideo.avi'); %create the video object
 open(video); %open the file for writing
 
-
+scV = rescale(V(:,2), 0, 255);
 
 for ii=1:size(framesMat, 3) %where N is the number of images
   vColoredFrame = framesMat(:,:,ii);
-  vColoredFrame(1:50,1:50) = rescale(V(ii,2), 0, 255) ;
-%   vColoredFrame = uint8(vColoredFrame);
+  height = round(scV(ii) / 5);
+  vColoredFrame(400:400+height,1:50) = scV(ii) ;
+  vColoredFrame = vColoredFrame / 255;
   
   writeVideo(video, vColoredFrame); %write the frame to file
 end
 
 close(video);
+
+%% Compare results with the Labels:
+figure;
+speaker3 = labels(20*60*20:20*60*20+N-1, 580);
+[c,lags] = xcorr(speaker3, V(:,2));
+subplot(2,1,1);
+stem(lags,c);
+title('$$R(V_2, speaker3)$$','fontsize',16,'interpreter','latex');
+
+subplot(2,1,2);
+dv = diff(V(:,2));
+[c,lags] = xcorr(speaker3, dv);
+stem(lags,c);
+title('$$R(dV, speaker3)$$','fontsize',16,'interpreter','latex');
+
+% figure;
+% x = V(:,2);
+% y = speaker3;
+% Normalised_CrossCorr = (1/N) * sum((x-mean(x)) .* (y-mean(y))) / sqrt(var(x)*var(y));
+% stem(Normalised_CrossCorr);
