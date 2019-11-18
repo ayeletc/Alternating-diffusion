@@ -1,4 +1,4 @@
-function K = affinityMatrix(samples,ep)
+function K = affinityMatrixFrames(samples,ep)
 % Calculate the affinity matrix of the frames matrix: s[szx x szy x N], using epislon ep
 % szx x szy is the size of a single frame
 
