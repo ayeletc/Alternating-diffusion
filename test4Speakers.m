@@ -17,9 +17,9 @@ acc25 = load(['Data' filesep 'CSVs' filesep 'day1_subject25.csv']);
 accSamples25 = acc25(27000:27000+N-1, :,:, :);
 accSamples25 = accSamples25(:, 2:4);
 
-[K_sym_25, K_25, K_25] = alternatingDiffusion(framesMat,ep1,accSamples25,ep2);
+[K_sym_25, K_antisym_25, K_25] = alternatingDiffusion(framesMat,ep1,accSamples25,ep2);
 
-[V25,D25] = eig(K_antisym_25);
+[V25,D25] = eig(K_25);
 D25 = diag(D25);
 
 %% Alternative Diffusion - speaker 28
