@@ -1,5 +1,5 @@
 function result = plotEigenVectorsColoredByLabels(id, speakerLabels, eigenVectors, V1id, V2id)
-speakerLabels = load(['Data' filesep 'CSVs' filesep 'speaker29.csv']);
+speakerLabels = load(['Data' filesep 'CSVs' filesep 'speaker' num2str(id) '29.csv']);
 speakerLabels = speakerLabels(:);
 
 figure;
