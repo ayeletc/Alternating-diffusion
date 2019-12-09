@@ -94,3 +94,28 @@ for ii=1:size(framesMat, 3)
   writeVideo(video, tFrame);
 end
 close(video);
+%% classify
+% Classify the eigenvectors we plot to the classes: speak/didnt speak . 
+% The classifier tests the quality of the clusters and the loss is the rate
+% for the plot.
+% we use this to understand what are the optimal eigenvectors we need to
+% take.
+id = 25;
+V1id = 2;
+V2id = 3;
+Nneighbors = 4;
+Vid = eval(['V' num2str(id)]);
+speakerID = eval(['speaker' num2str(id)]);
+ErrorMat=ones(N);
+for V1id = 2:10
+    for V2id = (V1id+1):10
+        if V1id == V2id
+            continue
+        end
+        mat = [Vid(:,V1id),Vid(:,V2id)];
+        [error, predicted] = classifyFrames(speakerID, abs(mat), Nneighbors, N); 
+        ErrorMat(V1id,V2id) = error;
+    end
+end
+minError = 100 * min(ErrorMat);
+disp(['error = ' num2str(minError) '%']);
