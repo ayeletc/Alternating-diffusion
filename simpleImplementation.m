@@ -2,33 +2,34 @@ clear
 close all
 
 % Data:
-
-% 1) lack of data
-% file: '2330_2500.mp4'
-% from day 3 camera 3, minutes 23:30-25:00
-% speakers: 8 & 24
-
-% 2)
+% 1)
 % file: '2000_2200.mp4'
 % from day 3 camera 3, minutes 20:00 - 22:00
 % speakers: 11 & 35
 
-% 3)
+% 2)
 % video: '2000_2200.mp4'
 % acc: 'day3_subject3.csv', 'day3_subject29.csv'
 % from day 3 camera 3, minutes 20:00 - 22:00
 % speakers: 3 & 29
-% 
+
+% 3)
+% video: 'day1_cam1_2230_2430_bw.mp4'
+% acc: 'day1_subject25.csv', 'day1_subject28.csv'
+% from day 1 camera 1, minutes 22:30 - 24:30
+% speakers: 25 & 28 & 17 & 19
+
+
 % N = 2000;
 N = 300;  % (20 fps)
 
-% file = '2330_2500.mp4';
-file = '2000_2200.mp4';
+% file = ['Data' filesep 'videos' filesep '2330_2500.mp4'];
+file = ['Data' filesep 'videos' filesep '2000_2200.mp4'];
 framesMat = frameExtractor(file, N);
-labels = load('labels.csv');
+labels = load(['Data' filesep 'CSVs' filesep 'labels.csv']);
 
 %% Alternative Diffussion - 3
-acc3 = load('day3_subject3.csv');
+acc3 = load(['Data' filesep 'CSVs' filesep 'day3_subject3.csv']);
 acc1Samples = acc3(24000:24000+N-1, :,:, :);
 acc1Samples = acc1Samples(:, 2:4);
 
@@ -36,13 +37,13 @@ acc1Samples = acc1Samples(:, 2:4);
 ep1 = 1e7;
 ep2 = 1;
 
-K = alternatingDiffusion(framesMat,ep1,acc1Samples,ep2);
+[K_sym, K_antisym, K] = alternatingDiffusion(framesMat,ep1,acc1Samples,ep2);
 
 [V,D] = eig(K);
 D = diag(D);
 %% Alternative Diffussion - 29
 
-acc29 = load('day3_subject29.csv');
+acc29 = load(['Data' filesep 'CSVs' filesep 'day3_subject29.csv']);
 
 acc1Samples29 = acc29(24000:24000+N-1, :,:, :);
 acc1Samples29 = acc1Samples29(:, 2:4);
@@ -50,15 +51,16 @@ acc1Samples29 = acc1Samples29(:, 2:4);
 ep1 = 1e7;
 ep2 = 1;
 
-K29 = alternatingDiffusion(framesMat,ep1,acc1Samples29,ep2);
+[K_sym_29, K_antisym_29, K_29] = alternatingDiffusion(framesMat,ep1,acc1Samples29,ep2);
 
-[V29,D29] = eig(K29);
+[V29,D29] = eig(K_29);
 D29 = diag(D29);
 
-%% Plots - speaker 3
+
+%% Plots - Accelerators colored by eigenvector - speaker 3
 figure;
-x = 1:N;
-scatter(x, abs(D));
+t = 1:N;
+scatter(t, abs(D));
 title('Eigen values');
 
 x1 = acc1Samples(:, 1);
@@ -69,13 +71,14 @@ figure;
 scatter3(x1(:),y1(:),z1(:), 100 ,V(:,2)*10, '.');
 title('$$accSamples_{1}$$','fontsize',16,'interpreter','latex');
 
-%% 
-video = VideoWriter('yourvideo.avi'); %create the video object
-open(video); %open the file for writing
+%% Create video visualizing V2 results 
+video = VideoWriter('visualingV2.avi'); % create the video object
+open(video); % open the file for writing
 
 scV = rescale(V(:,2), 0, 255);
 
-for ii=1:size(framesMat, 3) %where N is the number of images
+for ii=1:size(framesMat, 3)
+    
   vColoredFrame = framesMat(:,:,ii);
   height = round(scV(ii) / 5);
   vColoredFrame(400:400+height,1:50) = scV(ii) ;
@@ -83,44 +86,25 @@ for ii=1:size(framesMat, 3) %where N is the number of images
   
   writeVideo(video, vColoredFrame); %write the frame to file
 end
-
 close(video);
 
-
-%% Creating video for comparision with the V' 
-videoDiff = VideoWriter('yourvideodiff.MPEG','MPEG-4'); 
-open(videoDiff); 
-
-scV = rescale(dv, 0, 255);
-
-for ii=1:(size(framesMat, 3)-1)
-  vColoredFrame = framesMat(:,:,ii);
-  height = round(scV(ii) / 5);
-  vColoredFrame(400:400+height,1:50) = scV(ii) ;
-  vColoredFrame = vColoredFrame / 255;
-  
-  writeVideo(videoDiff, vColoredFrame); 
-end
-
-close(videoDiff);
-
-%% 
-video = VideoWriter('yourvideo3.MPEG','MPEG-4');
-open(video); 
-
-scV = rescale(speaker3, 0, 255);
-
-for ii=1:size(framesMat, 3)
-  vColoredFrame = framesMat(:,:,ii);
-  height = round(scV(ii) / 5);
-  vColoredFrame(400:400+height,1:50) = scV(ii) ;
-  vColoredFrame = vColoredFrame / 255;
-  
-  writeVideo(video, vColoredFrame); 
-end
-
-close(video);
-
+%% Create video visualizing labels 
+% video = VideoWriter('yourvideo3.MPEG','MPEG-4');
+% open(video); 
+% speaker29=load(['Data' filesep 'CSVs' filesep 'speaker29.csv']);
+% speaker29=speaker29(:);
+% scV = rescale(speaker29, 0, 255);
+% 
+% for ii=1:size(framesMat, 3)
+%   vColoredFrame = framesMat(:,:,ii);
+%   height = round(scV(ii) / 5);
+%   vColoredFrame(400:400+height,1:50) = scV(ii) ;
+%   vColoredFrame = vColoredFrame / 255;
+%   
+%   writeVideo(video, vColoredFrame); 
+% end
+% 
+% close(video);
 
 %% Compare results with the Labels:
 figure;
@@ -136,121 +120,69 @@ dv = diff(V(:,2));
 stem(lags,c);
 title('$$R(dV, speaker3)$$','fontsize',16,'interpreter','latex');
 
-%% Plots - eigen values
-figure;
-x = 1:N;
-scatter(x, abs(D));
-title('2D comparsion');
-
 %% Plots - eigen values colored by speaking (manual labeling) - speaker 3
-speaker3=load('speaker3.csv');
-speaker3=speaker3(:);
-figure;
-subplot(2,1,1)
-scatter(V(:,2),V(:,3),500, speaker3, '.');
-title('V_2, V_3 colored by speaker_3 speaking labels');
-xlabel('$$V_2$$','fontsize',16,'interpreter','latex');
-ylabel('$$V_3$$','fontsize',16,'interpreter','latex');
-xlim([-0.2 0.2])
-ylim([-0.2 0.2])
-grid on
+speaker3 = load(['Data' filesep 'CSVs' filesep 'speaker3.csv']);
+speaker3 = speaker3(:);
+plotEigenVectorsColoredByLabels(3, speaker3, V);
+speaker3_2 = load(['Data' filesep 'CSVs' filesep 'speaker3_2.csv']);
+speaker3_2 = speaker3_2(:);
+plotEigenVectorsColoredByLabels(3.2, speaker3_2, V);
 
-speaker3_2=load('speaker3_2.csv');
-speaker3_2=speaker3_2(:);
-subplot(2,1,2)
-scatter(V(:,2),V(:,3),500, speaker3_2, '.');
-title('V_2, V_3 colored by speaker_3 speaking labels');
-xlabel('$$V_2$$','fontsize',16,'interpreter','latex');
-ylabel('$$V_3$$','fontsize',16,'interpreter','latex');
-xlim([-0.2 0.2])
-ylim([-0.2 0.2])
-grid on
-%% Plots - eigen values colored by speaking (manual labeling) - speaker3
-figure;
-for ii=1:9
-    speaker3 = labels(20*60*20:20*60*20+N-1, 577+ii-1);
-    subplot(3,3,ii)
-    scatter(V(:,2),V(:,3),500, speaker3, '.');
-    title('V_2, V_3 colored by speaker_3 speaking labels');
-    xlabel('$$V_2$$','fontsize',16,'interpreter','latex');
-    ylabel('$$V_3$$','fontsize',16,'interpreter','latex');
-    xlim([-0.2 0.2])
-    ylim([-0.2 0.2])
-    grid on
-end
 
 %% Plots - eigen values colored by speaking (manual labeling) - speaker 29
-speaker29=load('speaker29.csv');
-speaker29=speaker29(:);
+speaker29 = load(['Data' filesep 'CSVs' filesep 'speaker29.csv']);
+speaker29 = speaker29(:);
+plotEigenVectorsColoredByLabels(29, speaker29, V29);
+
+%% Compare kernels for speaker 29
+[V_29_1,D_29_1] = eig(K_sym_29);
+[V_29_2,D_29_2] = eig(K_antisym_29);
+[V_29_3,D_29_3] = eig(K_29);
+
+figure('Name', 'V1, V2 colored by speaker29 labels');
+subplot(2,2,1);
+scatter(V_29_1(:,2),V_29_1(:, 3), 500 ,speaker29, '.');
+xlabel('$$ V_1 $$','fontsize',16,'interpreter','latex');
+ylabel('$$ V_2 $$','fontsize',16,'interpreter','latex');
+title('$$ K1_{29} \cdot K2^T_{29} + K2_{29} \cdot K1^T_{29} $$', 'interpreter', 'latex');
+grid on;
+subplot(2,2,2);
+scatter(real(V_29_2(:,2)),real(V_29_2(:, 3)), 500 ,speaker29, '.');
+xlabel('$$ V_1 $$','fontsize',16,'interpreter','latex');
+ylabel('$$ V_2 $$','fontsize',16,'interpreter','latex');
+title('$$ K1_{29} \cdot K2^T_{29} - K2_{29} \cdot K1^T_{29} $$', 'interpreter', 'latex');
+grid on;
+subplot(2,2,3);
+scatter(V_29_3(:,2),V_29_3(:, 3), 500 ,speaker29, '.');
+xlabel('$$ V_1 $$','fontsize',16,'interpreter','latex');
+ylabel('$$ V_2 $$','fontsize',16,'interpreter','latex');
+title('$$ K1_{29} \cdot K2_{29} $$', 'interpreter', 'latex');
+grid on;
+
+%% Plots - Problematic points - speaker 29
+V1 = V29(:,2);
+V2 = V29(:,3);
+exceptionalPoints = findExceptionalFrames(V1,V2,N,speaker29,55,2);
 figure;
-scatter(V29(:,2),V29(:,3),500, speaker29, '.');
-title('V_2, V_3 colored by speaker_{29} speaking labels');
+scatter(V29(:,2),V29(:,3),500, exceptionalPoints, '.');
+title('V_2, V_3 colored by speaker_{29} speaking labels and exceptions');
 xlabel('$$V_2$$','fontsize',16,'interpreter','latex');
 ylabel('$$V_3$$','fontsize',16,'interpreter','latex');
 xlim([-0.2 0.2])
 ylim([-0.2 0.2])
 grid on
 
-%% Cross-Correlation with speaker3's labels
-figure;
-x = V(:,2);
-y = speaker3;
-Normalized_CrossCorr = (1/N) * sum((x-mean(x)) .* (y-mean(y))) / sqrt(var(x)*var(y));
-stem(Normalized_CrossCorr);
-%% Crossc-correlation with all the speakers
-% we expect to see maximum for the speakers (3 for example)
+%% Creating video visualizing exceptional points
+video = VideoWriter('exceptionalFrames.avi'); 
+open(video); 
+scV = rescale(exceptionalPoints, 0, 255);
 
-% speakersCol = 562:9:823;
-firstID = 63;
-speakersCol = 4+9*firstID:9:823;
-speakersN = size(speakersCol, 2);
-x = V(:,2);
-Normalized_CrossCorr = zeros(speakersN, 1);
-for ii=1:speakersN
-    y = labels(20*60*20:20*60*20+N-1, ii);
-    Normalized_CrossCorr(ii) = (1/N) * sum((x-mean(x)) .* (y-mean(y))) / sqrt(var(x)*var(y));
+for ii=1:size(framesMat, 3)
+  vColoredFrame = framesMat(:,:,ii);
+  height = round(scV(ii) / 5);
+  vColoredFrame(400:400+height,1:50) = exceptionalPoints(ii) ;
+  vColoredFrame = vColoredFrame / 255;
+  
+  writeVideo(video, vColoredFrame);
 end
-figure;
-stem(firstID:(823-4)/9, Normalized_CrossCorr);
-xlabel('speakers - absolute ID')
-title('Normalized Cross-Correlation(Speak-Labels, V(2))');
-
-%videoreader
-v = VideoReader('2000_2200.mp4');
-
-%% accelerator colored by labels - speaker3
-t=linspace(1,300,300);
-figure('Name', 'accelerator colored by labels - speaker3');
-subplot(3,1,1)
-scatter(t,x1,400, speaker3_2, '.')
-grid on
-line(t,x1)
-ylim([-4 4])
-xlabel('$$t$$','fontsize',16,'interpreter','latex');
-ylabel('$$x$$','fontsize',16,'interpreter','latex');
-
-subplot(3,1,2)
-scatter(t,y1,400, speaker3_2, '.')
-grid on
-line(t,y1)
-ylim([-2 2])
-xlabel('$$t$$','fontsize',16,'interpreter','latex');
-ylabel('$$y$$','fontsize',16,'interpreter','latex');
-
-subplot(3,1,3)
-scatter(t,z1,400, speaker3_2, '.')
-grid on
-line(t,z1)
-ylim([-2 2])
-xlabel('$$t$$','fontsize',16,'interpreter','latex');
-ylabel('$$z$$','fontsize',16,'interpreter','latex');
-
-figure('Name', 'norm of diff - accelerator colored by labels - speaker3');
-t = linspace(1, 299, 299);
-n = sqrt(diff(x1).^2 + diff(y1).^2 + diff(z1).^2);
-scatter(t, n ,400, speaker3_2(1:end-1), '.');
-grid on
-line(t,n)
-ylabel('$$z$$','fontsize',16,'interpreter','latex');
-xlabel('$$t$$','fontsize',16,'interpreter','latex');
-ylabel('$$ norm $$','fontsize',16,'interpreter','latex');
+close(video);
