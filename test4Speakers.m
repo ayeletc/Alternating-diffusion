@@ -35,12 +35,12 @@ D28 = diag(D28);
 %% Plots - eigen values colored by speaking (manual labeling) - speaker 25
 speaker25 = load(['Data' filesep 'CSVs' filesep 'speaker25.csv']);
 speaker25 = speaker25(:);
-plotEigenVectorsColoredByLabels(25, speaker25, V25);
+plotEigenVectorsColoredByLabels(25, speaker25, V25, 2, 3);
 
 %% Plots - eigen values colored by speaking (manual labeling) - speaker 28
 speaker28 = load(['Data' filesep 'CSVs' filesep 'speaker28.csv']);
 speaker28 = speaker28(:);
-plotEigenVectorsColoredByLabels(28, speaker28, V28);
+plotEigenVectorsColoredByLabels(28, speaker28, V28, 2, 3);
 %% Visualize clusters - speaker 25
 Nclusters = 11;
 I = kmeans([real(V25(:,2)) , real(V25(:,3))], Nclusters);
