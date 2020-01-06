@@ -1,4 +1,4 @@
-function K = affinityMatrixFrames(samples,ep)
+function K = affinityMatrix(samples,ep)
 % Calculate the affinity matrix of the frames matrix: s[szx x szy x N], using epislon ep
 % szx x szy is the size of a single frame
 
@@ -7,11 +7,12 @@ szy=size(samples,2); %y of frame
 szn=size(samples,3); %number of frames
     
 b = reshape(samples,[szx*szy szn]);
-
+matNorm = zeros(szn);
  for i = 1:szn
      for j = 1: szn
-         matNorm(i,j)= vecnorm(b(i,:)-b(j,:));
+         matNorm(i,j) = vecnorm(b(:, i)-b(:, j));
      end
  end
- 
-K = (exp(-(matNorm .^ 2) / ep));
+c = matNorm .^ 2;
+ep = median(c(:));
+K = (exp(-c / ep));
